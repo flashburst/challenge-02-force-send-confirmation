@@ -1,13 +1,28 @@
-import { useState } from "react";
-import { ethers } from "ethers";
-import { ABI, CONTRACT_ADDRESS } from "../constants";
-import { useEthers } from "@usedapp/core";
+import { useState } from 'react';
+import { ethers } from 'ethers';
+import { ABI, CONTRACT_ADDRESS } from '../constants';
+import { useEthers } from '@usedapp/core';
+import ErrorMessage, { bodyMessageFilter } from './ErrorMessage';
+import { clearPreviewData } from 'next/dist/server/api-utils';
 
 const getProvider = (library, account) =>
   library.getSigner(account).connectUnchecked();
 
+const defaultErrorData = {
+  code: 0,
+  data: '',
+  message: '',
+};
+
+const ERROR_CODE = {
+  REQUEST_REJECTED: 4001,
+  INVALID_VALUE: -32603,
+};
+
 export const ChallengeUI = () => {
-  const [value, setValue] = useState("0");
+  const [value, setValue] = useState('0');
+  const [hasError, setHasError] = useState(false);
+  const [error, setError] = useState(defaultErrorData);
   const { account, library, chainId } = useEthers();
 
   if (!account || !library) {
@@ -30,7 +45,19 @@ export const ChallengeUI = () => {
       const tx = await instance.setNumber(value);
       await tx.wait();
     } catch (error) {
-      console.error(error);
+      console.error('res', error);
+      if (error.code === ERROR_CODE.REQUEST_REJECTED) {
+        return;
+      }
+
+      if (
+        error.data &&
+        error.data.message
+        // && error.code === ERROR_CODE.INVALID_VALUE
+      ) {
+        setError(error.data);
+        setHasError(true);
+      }
     }
   };
 
@@ -38,9 +65,11 @@ export const ChallengeUI = () => {
     try {
       const instance = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
       const tx = await instance.setNumber(value, {
-        gasLimit: "6000000",
+        gasLimit: '6000000',
       });
       await tx.wait();
+      setError(defaultErrorData);
+      setHasError(false);
     } catch (error) {
       console.error(error);
     }
@@ -59,8 +88,18 @@ export const ChallengeUI = () => {
       <br />
 
       <button onClick={sendTx}>Normal Tx</button>
-      <span>&nbsp; &nbsp;</span>
-      <button onClick={forceSendTx}>Forced Tx</button>
+
+      <ErrorMessage visible={hasError}>
+        <ErrorMessage.Title>Error found</ErrorMessage.Title>
+        <ErrorMessage.Body>
+          {bodyMessageFilter(error.message)}
+        </ErrorMessage.Body>
+        <ErrorMessage.Footer>
+          <button onClick={() => setHasError(false)}>Cancel</button>
+          &nbsp;&nbsp;
+          <button onClick={forceSendTx}>Forced Tx</button>
+        </ErrorMessage.Footer>
+      </ErrorMessage>
     </>
   );
 };
