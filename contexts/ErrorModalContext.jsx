@@ -29,41 +29,38 @@ export const useErrorModal = () => useContext(ErrorModalContext);
 export function ErrorModalProvider({ children }) {
   const [modalState, setModalState] = useState(defaultModalState);
 
-  const showModal = useCallback(
-    (newModalState) => {
-      setModalState(() => {
-        const data = Object.assign(
-          {},
-          defaultModalState.data,
-          newModalState.data || {}
-        );
+  const showModal = useCallback((newModalState) => {
+    setModalState(() => {
+      const data = Object.assign(
+        {},
+        defaultModalState.data,
+        newModalState.data || {}
+      );
 
-        const okButton = Object.assign(
-          {},
-          defaultModalState.okButton,
-          newModalState.okButton || {}
-        );
+      const okButton = Object.assign(
+        {},
+        defaultModalState.okButton,
+        newModalState.okButton || {}
+      );
 
-        const cancelButton = Object.assign(
-          {},
-          defaultModalState.cancelButton,
-          newModalState.cancelButton || {}
-        );
+      const cancelButton = Object.assign(
+        {},
+        defaultModalState.cancelButton,
+        newModalState.cancelButton || {}
+      );
 
-        return {
-          isOpen: true,
-          data,
-          okButton,
-          cancelButton,
-        };
-      });
-    },
-    [setModalState]
-  );
+      return {
+        isOpen: true,
+        data,
+        okButton,
+        cancelButton,
+      };
+    });
+  }, []);
 
   const closeModal = useCallback(() => {
     setModalState(defaultModalState);
-  }, [setModalState]);
+  }, []);
 
   return (
     <ErrorModalContext.Provider value={{ modalState, showModal, closeModal }}>
