@@ -91,10 +91,10 @@ function ErrorModal() {
               cancelButton.onClick(event);
               closeModal();
             }}
+            style={{ marginRight: '10px' }}
           >
             {cancelButton.label}
           </button>
-          &nbsp;&nbsp;
           <button
             onClick={(event) => {
               okButton.onClick(event);
