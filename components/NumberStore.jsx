@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { ethers } from "ethers";
-import { ABI, CONTRACT_ADDRESS } from "../constants";
+import { NumStoreABI, NUMSTORE_CONTRACT_ADDRESS } from "../constants";
 import { useEthers } from "@usedapp/core";
 
 const getProvider = (library, account) =>
   library.getSigner(account).connectUnchecked();
 
-export const ChallengeUI = () => {
+export const NumStoreUI = () => {
   const [value, setValue] = useState("0");
   const { account, library, chainId } = useEthers();
 
@@ -26,7 +26,11 @@ export const ChallengeUI = () => {
 
   const sendTx = async () => {
     try {
-      const instance = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
+      const instance = new ethers.Contract(
+        NUMSTORE_CONTRACT_ADDRESS,
+        NumStoreABI,
+        provider
+      );
       const tx = await instance.setNumber(value);
       await tx.wait();
     } catch (error) {
@@ -36,7 +40,11 @@ export const ChallengeUI = () => {
 
   const forceSendTx = async () => {
     try {
-      const instance = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
+      const instance = new ethers.Contract(
+        NUMSTORE_CONTRACT_ADDRESS,
+        NumStoreABI,
+        provider
+      );
       const tx = await instance.setNumber(value, {
         gasLimit: "6000000",
       });
@@ -48,7 +56,7 @@ export const ChallengeUI = () => {
 
   return (
     <>
-      <h1>Send transactions</h1>
+      <h2>Num Store</h2>
 
       <label>
         <div>Number</div>

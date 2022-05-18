@@ -1,6 +1,7 @@
 import Head from "next/head";
 
-import { ChallengeUI } from "../components/TransactionUI";
+import { NumStoreUI } from "../components/NumberStore";
+import { StrStoreUI } from "../components/StringStore";
 import { ConnectWallet } from "../components/ConnectWallet";
 
 export default function Home() {
@@ -14,10 +15,10 @@ export default function Home() {
 
       <main>
         <ConnectWallet />
-
-        <br />
-
-        <ChallengeUI />
+        <br /> <hr />
+        <NumStoreUI />
+        <br /> <br /> <hr />
+        <StrStoreUI />
       </main>
     </div>
   );
