@@ -122,8 +122,21 @@ function NotificationItem({
         backdropFilter: 'blur(4px)',
         marginBottom: '20px',
         marginRight: '10px',
+        position: 'relative',
       }}
     >
+      <button
+        onClick={() => removeNotification(id)}
+        style={{
+          position: 'absolute',
+          top: '5px',
+          right: '5px',
+          background: 'transparent',
+          border: 'none',
+        }}
+      >
+        X
+      </button>
       <span style={{ fontWeight: 'bold' }}>{title}</span>
       <p style={{ marginBottom: 0 }}>{message}</p>
     </li>
