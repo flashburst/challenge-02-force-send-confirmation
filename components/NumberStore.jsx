@@ -1,13 +1,22 @@
-import { useState } from "react";
-import { ethers } from "ethers";
-import { NumStoreABI, NUMSTORE_CONTRACT_ADDRESS } from "../constants";
-import { useEthers } from "@usedapp/core";
+import { useState } from 'react';
+import { ethers } from 'ethers';
+import {
+  ERROR_CODE,
+  NumStoreABI,
+  NUMSTORE_CONTRACT_ADDRESS,
+} from '../constants';
+import { useEthers } from '@usedapp/core';
+import { useErrorModal } from '../contexts/ErrorModalContext';
+import { bodyMessageFilter } from '../utils/message';
+import { Notify } from './Toast';
 
 const getProvider = (library, account) =>
   library.getSigner(account).connectUnchecked();
 
 export const NumStoreUI = () => {
-  const [value, setValue] = useState("0");
+  const errorModal = useErrorModal();
+
+  const [value, setValue] = useState('0');
   const { account, library, chainId } = useEthers();
 
   if (!account || !library) {
@@ -19,7 +28,7 @@ export const NumStoreUI = () => {
   }
 
   const onChange = (event) => {
-    setValue(Math.abs(parseInt(event.target.value) || 0));
+    setValue(String(Math.abs(parseInt(event.target.value) || 0)));
   };
 
   const provider = getProvider(library, account);
@@ -31,10 +40,25 @@ export const NumStoreUI = () => {
         NumStoreABI,
         provider
       );
-      const tx = await instance.setNumber(value);
-      await tx.wait();
+      await instance.setNumber(value).then((tx) => tx.wait());
     } catch (error) {
-      console.error(error);
+      if (error.code === ERROR_CODE.REQUEST_REJECTED) {
+        Notify.emit({
+          message: bodyMessageFilter(error.message),
+        });
+        return;
+      }
+
+      if (error.data && error.data.message) {
+        errorModal.showModal({
+          data: {
+            message: bodyMessageFilter(error.data.message),
+          },
+          okButton: {
+            onClick: forceSendTx,
+          },
+        });
+      }
     }
   };
 
@@ -45,12 +69,13 @@ export const NumStoreUI = () => {
         NumStoreABI,
         provider
       );
-      const tx = await instance.setNumber(value, {
-        gasLimit: "6000000",
-      });
-      await tx.wait();
+      await instance
+        .setNumber(value, {
+          gasLimit: '6000000',
+        })
+        .then((tx) => tx.wait());
     } catch (error) {
-      console.error(error);
+      console.log('force send error', error);
     }
   };
 
@@ -67,8 +92,6 @@ export const NumStoreUI = () => {
       <br />
 
       <button onClick={sendTx}>Normal Tx</button>
-      <span>&nbsp; &nbsp;</span>
-      <button onClick={forceSendTx}>Forced Tx</button>
     </>
   );
 };

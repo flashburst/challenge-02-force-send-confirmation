@@ -1,13 +1,22 @@
-import { useState } from "react";
-import { ethers } from "ethers";
-import { StrStoreABI, STRSTORE_CONTRACT_ADDRESS } from "../constants";
-import { useEthers } from "@usedapp/core";
+import { useState } from 'react';
+import { ethers } from 'ethers';
+import {
+  ERROR_CODE,
+  StrStoreABI,
+  STRSTORE_CONTRACT_ADDRESS,
+} from '../constants';
+import { useEthers } from '@usedapp/core';
+import { useErrorModal } from '../contexts/ErrorModalContext';
+import { bodyMessageFilter } from '../utils/message';
+import { Notify } from './Toast';
 
 const getProvider = (library, account) =>
   library.getSigner(account).connectUnchecked();
 
 export const StrStoreUI = () => {
-  const [value, setValue] = useState("");
+  const errorModal = useErrorModal();
+
+  const [value, setValue] = useState('');
   const { account, library, chainId } = useEthers();
 
   if (!account || !library) {
@@ -31,10 +40,25 @@ export const StrStoreUI = () => {
         StrStoreABI,
         provider
       );
-      const tx = await instance.setString(value);
-      await tx.wait();
+      await instance.setString(value).then((tx) => tx.wait());
     } catch (error) {
-      console.error(error);
+      if (error.code === ERROR_CODE.REQUEST_REJECTED) {
+        Notify.emit({
+          message: bodyMessageFilter(error.message),
+        });
+        return;
+      }
+
+      if (error.data && error.data.message) {
+        errorModal.showModal({
+          data: {
+            message: bodyMessageFilter(error.data.message),
+          },
+          okButton: {
+            onClick: forceSendTx,
+          },
+        });
+      }
     }
   };
 
@@ -45,10 +69,11 @@ export const StrStoreUI = () => {
         StrStoreABI,
         provider
       );
-      const tx = await instance.setNumber(value, {
-        gasLimit: "6000000",
-      });
-      await tx.wait();
+      await instance
+        .setNumber(value, {
+          gasLimit: '6000000',
+        })
+        .then((tx) => tx.wait());
     } catch (error) {
       console.error(error);
     }
@@ -67,8 +92,6 @@ export const StrStoreUI = () => {
       <br />
 
       <button onClick={sendTx}>Normal Tx</button>
-      <span>&nbsp; &nbsp;</span>
-      <button onClick={forceSendTx}>Forced Tx</button>
     </>
   );
 };

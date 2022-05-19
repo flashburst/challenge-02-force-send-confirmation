@@ -1,8 +1,10 @@
-import Head from "next/head";
+import Head from 'next/head';
 
-import { NumStoreUI } from "../components/NumberStore";
-import { StrStoreUI } from "../components/StringStore";
-import { ConnectWallet } from "../components/ConnectWallet";
+import { NumStoreUI } from '../components/NumberStore';
+import { StrStoreUI } from '../components/StringStore';
+import { ConnectWallet } from '../components/ConnectWallet';
+import { ErrorModalProvider } from '../contexts/ErrorModalContext';
+import Toast from '../components/Toast';
 
 export default function Home() {
   return (
@@ -14,11 +16,14 @@ export default function Home() {
       </Head>
 
       <main>
-        <ConnectWallet />
-        <br /> <hr />
-        <NumStoreUI />
-        <br /> <br /> <hr />
-        <StrStoreUI />
+        <ErrorModalProvider>
+          <ConnectWallet />
+          <br /> <hr />
+          <NumStoreUI />
+          <br /> <br /> <hr />
+          <StrStoreUI />
+        </ErrorModalProvider>
+        <Toast />
       </main>
     </div>
   );
